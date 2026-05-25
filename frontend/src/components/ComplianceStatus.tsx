@@ -7,35 +7,55 @@ interface ComplianceStatusProps {
 export default function ComplianceStatus({ products }: ComplianceStatusProps) {
   if (products.length === 0) return null;
 
-  return (
-    <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-      <h2 className="mb-4 text-base font-semibold text-gray-900">Compliance Status</h2>
+  const allChecks = products.flatMap((p) =>
+    p.compliance.map((c) => ({ ...c, product: p.productName, region: p.region }))
+  );
+  const passed = allChecks.filter((c) => c.passed).length;
+  const total = allChecks.length;
 
-      <div className="space-y-4">
-        {products.map((product) => (
-          <div key={`${product.productSlug}-${product.region}`}>
-            <p className="mb-2 text-sm font-medium text-gray-700">
-              {product.productName}
-              {products.filter((p) => p.productName === product.productName).length > 1 &&
-                ` (${product.region.toUpperCase()})`}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {product.compliance.map((check) => (
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-xs font-semibold uppercase tracking-widest text-zinc-500">
+          Compliance
+        </h3>
+        <span
+          className={`text-xs font-medium ${passed === total ? 'text-emerald-400' : 'text-amber-400'}`}
+        >
+          {passed}/{total} passed
+        </span>
+      </div>
+
+      <div className="space-y-2">
+        {products.map((product) => {
+          const failures = product.compliance.filter((c) => !c.passed);
+          const allPass = failures.length === 0;
+
+          return (
+            <div
+              key={`${product.productSlug}-${product.region}`}
+              className="rounded-lg bg-white/[0.02] px-3 py-2.5"
+            >
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-zinc-300">{product.productName}</p>
                 <span
-                  key={check.check}
-                  title={check.message}
-                  className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${
-                    check.passed
-                      ? 'bg-green-50 text-green-700 ring-1 ring-green-200'
-                      : 'bg-red-50 text-red-700 ring-1 ring-red-200'
+                  className={`rounded-md px-1.5 py-0.5 text-[10px] font-semibold uppercase ${
+                    allPass
+                      ? 'bg-emerald-500/10 text-emerald-400'
+                      : 'bg-amber-500/10 text-amber-400'
                   }`}
                 >
-                  {check.passed ? '✓' : '✗'} {check.check.replace(/_/g, ' ')}
+                  {product.region}
                 </span>
-              ))}
+              </div>
+              {!allPass && (
+                <p className="mt-1 text-xs text-zinc-500">
+                  {failures.map((f) => f.check.replace(/_/g, ' ')).join(', ')}
+                </p>
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

@@ -2,8 +2,73 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: 'Source Sans 3', system-ui, -apple-system, sans-serif;
-  background-color: #fafafa;
-  color: #1e1e1e;
+@layer base {
+  * {
+    @apply border-white/[0.08];
+  }
+
+  html {
+    @apply antialiased;
+  }
+
+  body {
+    @apply bg-studio-bg font-sans text-studio-text;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-white/10;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-white/20;
+  }
+}
+
+@layer components {
+  .glass-panel {
+    @apply bg-white/[0.03] backdrop-blur-xl;
+  }
+
+  .studio-input {
+    @apply w-full rounded-lg bg-white/[0.04] px-3 py-2.5 text-sm text-white
+      placeholder:text-zinc-500 transition-all duration-200
+      focus:bg-white/[0.06] focus:outline-none focus:ring-1 focus:ring-blue-500/50;
+  }
+
+  .studio-label {
+    @apply mb-1.5 block text-xs font-medium uppercase tracking-wider text-zinc-400;
+  }
+
+  .studio-btn-primary {
+    @apply relative overflow-hidden rounded-lg px-4 py-2.5 text-sm font-semibold text-white
+      transition-all duration-200 hover:brightness-110 active:scale-[0.98]
+      disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:brightness-100;
+    background: linear-gradient(135deg, #1473e6 0%, #6366f1 50%, #8b5cf6 100%);
+  }
+
+  .studio-btn-ghost {
+    @apply rounded-lg px-3 py-2 text-sm font-medium text-zinc-400 transition-colors
+      hover:bg-white/[0.05] hover:text-white;
+  }
+
+  .shimmer-bg {
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.03) 0%,
+      rgba(255, 255, 255, 0.08) 50%,
+      rgba(255, 255, 255, 0.03) 100%
+    );
+    background-size: 200% 100%;
+    @apply animate-shimmer;
+  }
 }

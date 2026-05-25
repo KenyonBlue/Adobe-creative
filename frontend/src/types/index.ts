@@ -68,6 +68,15 @@ export interface UploadedAsset {
   size: number;
 }
 
+export type WorkflowUiStep =
+  | 'campaign'
+  | 'products'
+  | 'markets'
+  | 'assets'
+  | 'generate'
+  | 'review'
+  | 'export';
+
 export type PipelineStep =
   | 'idle'
   | 'validating'

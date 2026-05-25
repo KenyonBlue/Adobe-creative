@@ -1,4 +1,4 @@
-import { formatDuration } from '../api/client';
+import { formatDuration, getOutputUrl } from '../api/client';
 import { CampaignReport } from '../types';
 
 interface ReportSummaryProps {
@@ -8,49 +8,87 @@ interface ReportSummaryProps {
 export default function ReportSummary({ report }: ReportSummaryProps) {
   if (!report) return null;
 
-  const totalOutputs = report.products.reduce(
-    (sum, p) => sum + Object.keys(p.outputs).length,
-    0
-  );
-  const compliancePassRate =
-    report.products.length > 0
-      ? Math.round(
-          ((report.products.flatMap((p) => p.compliance).filter((c) => c.passed).length /
-            report.products.flatMap((p) => p.compliance).length) *
-            100)
-        )
-      : 100;
-
   const stats = [
-    { label: 'Assets Reused', value: report.assetsReused.length },
-    { label: 'Assets Generated', value: report.assetsGenerated.length },
-    { label: 'Localized Variants', value: report.localizedVariantsCreated },
-    { label: 'Total Outputs', value: totalOutputs },
-    { label: 'Compliance Pass Rate', value: `${compliancePassRate}%` },
-    { label: 'Duration', value: formatDuration(report.processingDurationMs) },
-    { label: 'GenAI Provider', value: report.generationProvider },
+    { label: 'Reused', value: report.assetsReused.length, color: 'text-emerald-400' },
+    { label: 'Generated', value: report.assetsGenerated.length, color: 'text-violet-400' },
+    { label: 'Localized', value: report.localizedVariantsCreated, color: 'text-blue-400' },
+    { label: 'Duration', value: formatDuration(report.processingDurationMs), color: 'text-zinc-300' },
   ];
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-      <h2 className="mb-4 text-base font-semibold text-gray-900">Report Summary</h2>
+    <div className="space-y-4">
+      <h3 className="text-xs font-semibold uppercase tracking-widest text-zinc-500">
+        Session Report
+      </h3>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-        {stats.map(({ label, value }) => (
-          <div key={label} className="rounded-lg bg-gray-50 p-3">
-            <p className="text-xs text-gray-500">{label}</p>
-            <p className="mt-1 text-lg font-semibold text-gray-900">{value}</p>
+      <div className="grid grid-cols-2 gap-2">
+        {stats.map(({ label, value, color }) => (
+          <div key={label} className="rounded-lg bg-white/[0.02] px-3 py-2.5">
+            <p className="text-[10px] uppercase tracking-wider text-zinc-500">{label}</p>
+            <p className={`mt-0.5 text-lg font-semibold ${color}`}>{value}</p>
           </div>
         ))}
       </div>
 
+      <div className="rounded-lg bg-white/[0.02] px-3 py-2.5">
+        <p className="text-[10px] uppercase tracking-wider text-zinc-500">Provider</p>
+        <p className="mt-0.5 text-sm text-zinc-300">{report.generationProvider}</p>
+      </div>
+
       {report.complianceFailures.length > 0 && (
-        <div className="mt-4 rounded-lg bg-amber-50 p-3">
-          <p className="text-sm font-medium text-amber-800">
-            {report.complianceFailures.length} compliance issue(s) detected
+        <div className="rounded-lg bg-amber-500/10 px-3 py-2 ring-1 ring-amber-500/20">
+          <p className="text-xs font-medium text-amber-300">
+            {report.complianceFailures.length} issue(s) flagged
           </p>
         </div>
       )}
+    </div>
+  );
+}
+
+interface ExportPanelProps {
+  report: CampaignReport | null;
+}
+
+export function ExportPanel({ report }: ExportPanelProps) {
+  if (!report) {
+    return (
+      <p className="text-sm text-zinc-500">
+        Run the pipeline to export generated creatives.
+      </p>
+    );
+  }
+
+  const handleDownloadAll = () => {
+    report.outputPaths.forEach((path, i) => {
+      setTimeout(() => {
+        const link = document.createElement('a');
+        link.href = getOutputUrl(path);
+        link.download = path.split('/').pop() || 'creative.png';
+        link.click();
+      }, i * 200);
+    });
+  };
+
+  return (
+    <div className="space-y-4">
+      <button onClick={handleDownloadAll} className="studio-btn-primary w-full">
+        Download All ({report.outputPaths.length})
+      </button>
+
+      <div className="max-h-48 space-y-1 overflow-y-auto">
+        {report.outputPaths.map((path) => (
+          <a
+            key={path}
+            href={getOutputUrl(path)}
+            download
+            className="flex items-center justify-between rounded-lg px-3 py-2 text-xs text-zinc-400 transition hover:bg-white/[0.04] hover:text-zinc-200"
+          >
+            <span className="truncate">{path}</span>
+            <span className="ml-2 shrink-0 text-zinc-600">↓</span>
+          </a>
+        ))}
+      </div>
     </div>
   );
 }

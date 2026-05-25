@@ -45,11 +45,6 @@ export function getOutputUrl(relativePath: string): string {
   return `${API_BASE}/api/outputs/${relativePath}`;
 }
 
-export function parseBrief(json: string): CampaignBrief {
-  const parsed = JSON.parse(json);
-  return parsed as CampaignBrief;
-}
-
 export function formatDuration(ms: number): string {
   if (ms < 1000) return `${ms}ms`;
   return `${(ms / 1000).toFixed(1)}s`;

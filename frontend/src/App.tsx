@@ -1,42 +1,21 @@
 import { useCallback, useState } from 'react';
 import Layout from './components/Layout';
-import CampaignForm from './components/CampaignForm';
-import GenerationStatus from './components/GenerationStatus';
-import PreviewGallery from './components/PreviewGallery';
-import AspectRatioTabs from './components/AspectRatioTabs';
-import ComplianceStatus from './components/ComplianceStatus';
-import ReportSummary from './components/ReportSummary';
+import WorkflowSidebar from './components/WorkflowSidebar';
+import CreativeCanvas from './components/CreativeCanvas';
+import InsightsPanel from './components/InsightsPanel';
 import { runCampaign } from './api/client';
 import {
   AspectRatioKey,
   CampaignReport,
   PipelineStep,
   UploadedAsset,
+  WorkflowUiStep,
 } from './types';
-
-const DEFAULT_BRIEF = `{
-  "campaignName": "Summer Energy Campaign",
-  "products": [
-    {
-      "name": "Hydration Drink",
-      "type": "beverage",
-      "description": "Electrolyte-rich sports hydration drink with tropical citrus flavor"
-    },
-    {
-      "name": "Protein Bar",
-      "type": "snack",
-      "description": "High-protein energy bar with dark chocolate and almond crunch"
-    }
-  ],
-  "regions": [
-    { "code": "us", "language": "en" },
-    { "code": "jp", "language": "ja", "localizedMessage": "夏のエネルギーをチャージ" }
-  ],
-  "audiences": ["fitness enthusiasts", "outdoor athletes"],
-  "message": "Fuel Your Summer — Power Through Every Workout",
-  "brandColors": ["#1473E6", "#FF6B00", "#FFFFFF"],
-  "style": "premium athletic lifestyle"
-}`;
+import {
+  DEFAULT_FORM_STATE,
+  CampaignFormState,
+  buildCampaignBrief,
+} from './utils/brief-form';
 
 const STEP_DELAYS: PipelineStep[] = [
   'validating',
@@ -51,8 +30,9 @@ function sleep(ms: number) {
 }
 
 export default function App() {
-  const [briefJson, setBriefJson] = useState(DEFAULT_BRIEF);
-  const [step, setStep] = useState<PipelineStep>('idle');
+  const [form, setForm] = useState<CampaignFormState>(DEFAULT_FORM_STATE);
+  const [workflowStep, setWorkflowStep] = useState<WorkflowUiStep>('campaign');
+  const [pipelineStep, setPipelineStep] = useState<PipelineStep>('idle');
   const [error, setError] = useState<string | null>(null);
   const [report, setReport] = useState<CampaignReport | null>(null);
   const [selectedRatio, setSelectedRatio] = useState<AspectRatioKey>('1x1');
@@ -62,63 +42,74 @@ export default function App() {
     setUploadedAssets((prev) => [...prev, ...assets]);
   }, []);
 
-  const handleSubmit = useCallback(async () => {
+  const handleGenerate = useCallback(async () => {
     setError(null);
     setReport(null);
-    setStep('validating');
+    setPipelineStep('validating');
+    setWorkflowStep('review');
 
     try {
-      const brief = JSON.parse(briefJson);
+      const productAssetPaths: Record<number, string> = {};
+      if (uploadedAssets[0]) productAssetPaths[0] = uploadedAssets[0].path;
 
-      if (uploadedAssets.length > 0 && brief.products?.[0]) {
-        brief.products[0].existingAssetPath = uploadedAssets[0].path;
-      }
+      const brief = buildCampaignBrief(form, {
+        productAssetPaths,
+        logoPath: uploadedAssets[1]?.path,
+      });
 
       const progressPromise = (async () => {
         for (const s of STEP_DELAYS.slice(1)) {
-          await sleep(400);
-          setStep(s);
+          await sleep(500);
+          setPipelineStep(s);
         }
       })();
 
       const resultPromise = runCampaign(brief);
       const [, result] = await Promise.all([progressPromise, resultPromise]);
 
-      setStep('complete');
+      setPipelineStep('complete');
       setReport(result.report);
     } catch (err) {
-      setStep('error');
+      setPipelineStep('error');
       setError(err instanceof Error ? err.message : 'Pipeline failed');
     }
-  }, [briefJson, uploadedAssets]);
+  }, [form, uploadedAssets]);
+
+  const products = report?.products ?? [];
 
   return (
-    <Layout>
-      <div className="grid gap-8 lg:grid-cols-5">
-        <div className="lg:col-span-2 space-y-6">
-          <CampaignForm
-            briefJson={briefJson}
-            onBriefChange={setBriefJson}
-            onUploadedAssets={handleUploadedAssets}
-            onSubmit={handleSubmit}
-            isRunning={step !== 'idle' && step !== 'complete' && step !== 'error'}
-          />
-          <GenerationStatus step={step} error={error} />
-          <ComplianceStatus products={report?.products ?? []} />
-          <ReportSummary report={report} />
-        </div>
-
-        <div className="lg:col-span-3">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-base font-semibold text-gray-900">Preview Gallery</h2>
-            <AspectRatioTabs selected={selectedRatio} onChange={setSelectedRatio} />
-          </div>
-          <PreviewGallery
-            products={report?.products ?? []}
-            selectedRatio={selectedRatio}
-          />
-        </div>
-      </div>
-    </Layout>
+    <Layout
+      sidebar={
+        <WorkflowSidebar
+          form={form}
+          onChange={setForm}
+          activeStep={workflowStep}
+          onStepChange={setWorkflowStep}
+          onUploadedAssets={handleUploadedAssets}
+          onGenerate={handleGenerate}
+          pipelineStep={pipelineStep}
+          hasReport={report !== null}
+        />
+      }
+      canvas={
+        <CreativeCanvas
+          products={products}
+          selectedRatio={selectedRatio}
+          onRatioChange={setSelectedRatio}
+          pipelineStep={pipelineStep}
+          report={report}
+          campaignName={form.campaignName}
+        />
+      }
+      insights={
+        <InsightsPanel
+          pipelineStep={pipelineStep}
+          error={error}
+          report={report}
+          products={products}
+          activeWorkflowStep={workflowStep}
+        />
+      }
+    />
   );
 }
