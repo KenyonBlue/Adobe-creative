@@ -1,0 +1,232 @@
+{
+  "campaignName": "Summer Energy Campaign",
+  "campaignSlug": "summer-energy-campaign",
+  "startedAt": "2026-05-25T19:50:02.256Z",
+  "completedAt": "2026-05-25T19:50:03.228Z",
+  "processingDurationMs": 972,
+  "assetsReused": [],
+  "assetsGenerated": [
+    "Hydration Drink",
+    "Protein Bar"
+  ],
+  "localizedVariantsCreated": 4,
+  "products": [
+    {
+      "productName": "Hydration Drink",
+      "productSlug": "hydration-drink",
+      "region": "us",
+      "message": "Fuel Your Summer",
+      "outputs": {
+        "1x1": "summer-energy-campaign/hydration-drink/us/1x1.png",
+        "9x16": "summer-energy-campaign/hydration-drink/us/9x16.png",
+        "16x9": "summer-energy-campaign/hydration-drink/us/16x9.png"
+      },
+      "compliance": [
+        {
+          "check": "campaign_message_present",
+          "category": "brand",
+          "passed": true,
+          "message": "Campaign message is present"
+        },
+        {
+          "check": "brand_colors_specified",
+          "category": "brand",
+          "passed": true,
+          "message": "Brand colors specified: #1473E6, #FF6B00, #FFFFFF"
+        },
+        {
+          "check": "logo_present",
+          "category": "brand",
+          "passed": false,
+          "message": "No logo asset provided"
+        },
+        {
+          "check": "product_description_present",
+          "category": "brand",
+          "passed": true,
+          "message": "Product description is present"
+        },
+        {
+          "check": "prohibited_terms",
+          "category": "legal",
+          "passed": true,
+          "message": "No prohibited marketing terms detected"
+        }
+      ],
+      "assetSource": "generated"
+    },
+    {
+      "productName": "Hydration Drink",
+      "productSlug": "hydration-drink",
+      "region": "jp",
+      "message": "夏のエネルギーをチャージ",
+      "outputs": {
+        "1x1": "summer-energy-campaign/hydration-drink/jp/1x1.png",
+        "9x16": "summer-energy-campaign/hydration-drink/jp/9x16.png",
+        "16x9": "summer-energy-campaign/hydration-drink/jp/16x9.png"
+      },
+      "compliance": [
+        {
+          "check": "campaign_message_present",
+          "category": "brand",
+          "passed": true,
+          "message": "Campaign message is present"
+        },
+        {
+          "check": "brand_colors_specified",
+          "category": "brand",
+          "passed": true,
+          "message": "Brand colors specified: #1473E6, #FF6B00, #FFFFFF"
+        },
+        {
+          "check": "logo_present",
+          "category": "brand",
+          "passed": false,
+          "message": "No logo asset provided"
+        },
+        {
+          "check": "product_description_present",
+          "category": "brand",
+          "passed": true,
+          "message": "Product description is present"
+        },
+        {
+          "check": "prohibited_terms",
+          "category": "legal",
+          "passed": true,
+          "message": "No prohibited marketing terms detected"
+        }
+      ],
+      "assetSource": "generated"
+    },
+    {
+      "productName": "Protein Bar",
+      "productSlug": "protein-bar",
+      "region": "us",
+      "message": "Fuel Your Summer",
+      "outputs": {
+        "1x1": "summer-energy-campaign/protein-bar/us/1x1.png",
+        "9x16": "summer-energy-campaign/protein-bar/us/9x16.png",
+        "16x9": "summer-energy-campaign/protein-bar/us/16x9.png"
+      },
+      "compliance": [
+        {
+          "check": "campaign_message_present",
+          "category": "brand",
+          "passed": true,
+          "message": "Campaign message is present"
+        },
+        {
+          "check": "brand_colors_specified",
+          "category": "brand",
+          "passed": true,
+          "message": "Brand colors specified: #1473E6, #FF6B00, #FFFFFF"
+        },
+        {
+          "check": "logo_present",
+          "category": "brand",
+          "passed": false,
+          "message": "No logo asset provided"
+        },
+        {
+          "check": "product_description_present",
+          "category": "brand",
+          "passed": true,
+          "message": "Product description is present"
+        },
+        {
+          "check": "prohibited_terms",
+          "category": "legal",
+          "passed": true,
+          "message": "No prohibited marketing terms detected"
+        }
+      ],
+      "assetSource": "generated"
+    },
+    {
+      "productName": "Protein Bar",
+      "productSlug": "protein-bar",
+      "region": "jp",
+      "message": "夏のエネルギーをチャージ",
+      "outputs": {
+        "1x1": "summer-energy-campaign/protein-bar/jp/1x1.png",
+        "9x16": "summer-energy-campaign/protein-bar/jp/9x16.png",
+        "16x9": "summer-energy-campaign/protein-bar/jp/16x9.png"
+      },
+      "compliance": [
+        {
+          "check": "campaign_message_present",
+          "category": "brand",
+          "passed": true,
+          "message": "Campaign message is present"
+        },
+        {
+          "check": "brand_colors_specified",
+          "category": "brand",
+          "passed": true,
+          "message": "Brand colors specified: #1473E6, #FF6B00, #FFFFFF"
+        },
+        {
+          "check": "logo_present",
+          "category": "brand",
+          "passed": false,
+          "message": "No logo asset provided"
+        },
+        {
+          "check": "product_description_present",
+          "category": "brand",
+          "passed": true,
+          "message": "Product description is present"
+        },
+        {
+          "check": "prohibited_terms",
+          "category": "legal",
+          "passed": true,
+          "message": "No prohibited marketing terms detected"
+        }
+      ],
+      "assetSource": "generated"
+    }
+  ],
+  "complianceFailures": [
+    {
+      "check": "logo_present",
+      "category": "brand",
+      "passed": false,
+      "message": "No logo asset provided"
+    },
+    {
+      "check": "logo_present",
+      "category": "brand",
+      "passed": false,
+      "message": "No logo asset provided"
+    },
+    {
+      "check": "logo_present",
+      "category": "brand",
+      "passed": false,
+      "message": "No logo asset provided"
+    },
+    {
+      "check": "logo_present",
+      "category": "brand",
+      "passed": false,
+      "message": "No logo asset provided"
+    }
+  ],
+  "outputPaths": [
+    "summer-energy-campaign/hydration-drink/us/1x1.png",
+    "summer-energy-campaign/hydration-drink/us/9x16.png",
+    "summer-energy-campaign/hydration-drink/us/16x9.png",
+    "summer-energy-campaign/hydration-drink/jp/1x1.png",
+    "summer-energy-campaign/hydration-drink/jp/9x16.png",
+    "summer-energy-campaign/hydration-drink/jp/16x9.png",
+    "summer-energy-campaign/protein-bar/us/1x1.png",
+    "summer-energy-campaign/protein-bar/us/9x16.png",
+    "summer-energy-campaign/protein-bar/us/16x9.png",
+    "summer-energy-campaign/protein-bar/jp/1x1.png",
+    "summer-energy-campaign/protein-bar/jp/9x16.png",
+    "summer-energy-campaign/protein-bar/jp/16x9.png"
+  ],
+  "generationProvider": "mock"
+}

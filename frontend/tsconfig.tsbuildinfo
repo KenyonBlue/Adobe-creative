@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/api/client.ts","./src/components/aspectratiotabs.tsx","./src/components/campaignform.tsx","./src/components/compliancestatus.tsx","./src/components/generationstatus.tsx","./src/components/layout.tsx","./src/components/previewgallery.tsx","./src/components/reportsummary.tsx","./src/types/index.ts"],"errors":true,"version":"5.9.3"}

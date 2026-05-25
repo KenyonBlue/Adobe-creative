@@ -1,0 +1,30 @@
+{
+  "campaignName": "Winter Holiday Campaign",
+  "products": [
+    {
+      "name": "Hot Cocoa Mix",
+      "type": "beverage",
+      "description": "Rich Belgian chocolate hot cocoa with marshmallow topping"
+    },
+    {
+      "name": "Gingerbread Cookies",
+      "type": "snack",
+      "description": "Classic spiced gingerbread cookies with royal icing decoration"
+    }
+  ],
+  "regions": [
+    {
+      "code": "us",
+      "language": "en"
+    },
+    {
+      "code": "uk",
+      "language": "en",
+      "localizedMessage": "Warm Up Your Winter"
+    }
+  ],
+  "audiences": ["families", "holiday shoppers", "comfort food lovers"],
+  "message": "Warm Up Your Winter with Cozy Favorites",
+  "brandColors": ["#C41E3A", "#228B22", "#FFF8DC"],
+  "style": "cozy festive holiday"
+}

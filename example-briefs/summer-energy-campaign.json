@@ -1,0 +1,32 @@
+{
+  "campaignName": "Summer Energy Campaign",
+  "products": [
+    {
+      "name": "Hydration Drink",
+      "type": "beverage",
+      "description": "Electrolyte-rich sports hydration drink with tropical citrus flavor",
+      "existingAssetPath": "uploads/hydration-drink-hero.png"
+    },
+    {
+      "name": "Protein Bar",
+      "type": "snack",
+      "description": "High-protein energy bar with dark chocolate and almond crunch"
+    }
+  ],
+  "regions": [
+    {
+      "code": "us",
+      "language": "en",
+      "localizedMessage": "Fuel Your Summer"
+    },
+    {
+      "code": "jp",
+      "language": "ja",
+      "localizedMessage": "夏のエネルギーをチャージ"
+    }
+  ],
+  "audiences": ["fitness enthusiasts", "outdoor athletes", "health-conscious millennials"],
+  "message": "Fuel Your Summer — Power Through Every Workout",
+  "brandColors": ["#1473E6", "#FF6B00", "#FFFFFF"],
+  "style": "premium athletic lifestyle"
+}
