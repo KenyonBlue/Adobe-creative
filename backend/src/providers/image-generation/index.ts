@@ -1,7 +1,16 @@
-import { config } from '../../config';
-import { ImageGenerationProvider } from './image-generation.provider';
 import { MockImageProvider } from './mock.provider';
 import { OpenAIImageProvider } from './openai.provider';
+
+export interface GenerationOptions {
+  width?: number;
+  height?: number;
+}
+
+export interface ImageGenerationProvider {
+  generateImage(prompt: string, options?: GenerationOptions): Promise<Buffer>;
+  isAvailable(): Promise<boolean>;
+  getName(): string;
+}
 
 export async function createImageGenerationProvider(): Promise<ImageGenerationProvider> {
   const openai = new OpenAIImageProvider();
@@ -9,8 +18,4 @@ export async function createImageGenerationProvider(): Promise<ImageGenerationPr
     return openai;
   }
   return new MockImageProvider();
-}
-
-export function getProviderName(provider: ImageGenerationProvider): string {
-  return provider.getName();
 }

@@ -57,9 +57,18 @@ export interface CampaignReport {
 }
 
 export interface CampaignRunResponse {
-  id: string;
   status: string;
   report: CampaignReport;
+}
+
+export interface CampaignSummary {
+  campaignSlug: string;
+  campaignName: string;
+  completedAt: string;
+  productCount: number;
+  outputCount: number;
+  generationProvider: string;
+  thumbnailPath?: string;
 }
 
 export interface UploadedAsset {
@@ -68,14 +77,12 @@ export interface UploadedAsset {
   size: number;
 }
 
-export type WorkflowUiStep =
+export type ModalWorkflowStep =
   | 'campaign'
   | 'products'
   | 'markets'
   | 'assets'
-  | 'generate'
-  | 'review'
-  | 'export';
+  | 'generate';
 
 export type PipelineStep =
   | 'idle'

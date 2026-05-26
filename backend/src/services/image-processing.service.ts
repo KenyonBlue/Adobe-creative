@@ -1,7 +1,6 @@
 import { ASPECT_RATIOS, AspectRatioKey } from '../config';
 import { CampaignBrief, Product, Region } from '../models/campaign-brief.model';
-import { ImageGenerationProvider } from '../providers/image-generation/image-generation.provider';
-import { buildImagePrompt, getDisplayMessage } from '../utils/prompt-builder';
+import { getDisplayMessage } from '../utils/prompt-builder';
 import {
   compositeLogo,
   overlayCampaignMessage,
@@ -43,22 +42,5 @@ export class ImageProcessingService {
     }
 
     return results;
-  }
-}
-
-export class ImageGenerationService {
-  constructor(private readonly provider: ImageGenerationProvider) {}
-
-  getProviderName(): string {
-    return this.provider.getName();
-  }
-
-  async generateHeroAsset(
-    brief: CampaignBrief,
-    product: Product,
-    region: Region
-  ): Promise<Buffer> {
-    const prompt = buildImagePrompt(brief, product, region);
-    return this.provider.generateImage(prompt, { width: 1024, height: 1024 });
   }
 }

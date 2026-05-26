@@ -8,7 +8,7 @@ This system automates the creation of social ad campaign assets by:
 
 1. Accepting campaign briefs (JSON) and optional product assets
 2. Reusing existing assets when available
-3. Generating missing hero images via GenAI (OpenAI DALL-E or mock fallback)
+3. Generating missing hero images via GenAI (OpenAI gpt-image-1 / DALL-E 3, or mock fallback)
 4. Producing creatives in three aspect ratios (1:1, 9:16, 16:9)
 5. Overlaying campaign messaging on final images
 6. Running brand and legal compliance checks
@@ -56,7 +56,7 @@ flowchart TD
 | Frontend | React, TypeScript, Vite, TailwindCSS |
 | Backend | Node.js, TypeScript, Express |
 | Image Processing | Sharp |
-| AI Generation | OpenAI DALL-E 3 (with mock fallback) |
+| AI Generation | OpenAI gpt-image-1 / DALL-E 3 (with mock fallback) |
 | Containerization | Docker, Docker Compose |
 | Storage | Local filesystem (abstracted via `StorageProvider`) |
 
@@ -114,6 +114,18 @@ npm run dev
 
 Generated outputs are saved to `outputs/<campaign-slug>/<product-slug>/`.
 
+## Testing
+
+```bash
+# From project root
+npm test
+
+# Or from backend/
+cd backend && npm test
+```
+
+Unit tests cover validation, compliance, localization, asset reuse, image processing, provider selection, and the full pipeline (with mocked AI + translation).
+
 ## Example Campaign Brief
 
 See [`example-briefs/summer-energy-campaign.json`](example-briefs/summer-energy-campaign.json):
@@ -135,7 +147,7 @@ See [`example-briefs/summer-energy-campaign.json`](example-briefs/summer-energy-
   ],
   "regions": [
     { "code": "us", "language": "en" },
-    { "code": "jp", "language": "ja", "localizedMessage": "夏のエネルギーをチャージ" }
+    { "code": "jp", "language": "ja" }
   ],
   "audiences": ["fitness enthusiasts", "outdoor athletes"],
   "message": "Fuel Your Summer — Power Through Every Workout",
@@ -184,9 +196,19 @@ outputs/
 
 Both storage and image generation use interface abstractions (`StorageProvider`, `ImageGenerationProvider`). The PDF mentions Azure/AWS/Dropbox as possible storage targets, so the abstraction is justified without over-engineering.
 
+### Automatic Localization
+
+When a region has no `localizedMessage`, the pipeline auto-translates the single campaign message using `@vitalets/google-translate-api` (free, no API key). The UI has one message field; each market only needs a region code and language.
+
+### Asset Reuse vs. AI Generation
+
+When a user uploads a product image, the pipeline uses it **directly** as the hero asset — it skips AI generation entirely and passes the uploaded image straight to the resize and text-overlay step. This satisfies the requirement to "reuse existing assets when available" and avoids unnecessary API calls. The `report.json` records reused assets separately from generated ones so you can see which path each product took.
+
+When no asset is uploaded, the pipeline generates a hero image from the product description and campaign brief via the GenAI provider.
+
 ### Mock GenAI Fallback
 
-The app runs fully without API keys. `MockImageProvider` generates gradient placeholder images via Sharp, ensuring interviewers can demo immediately. When `OPENAI_API_KEY` is set, `OpenAIImageProvider` (DALL-E 3) is used automatically.
+The app runs fully without API keys. `MockImageProvider` generates gradient placeholder images via Sharp, ensuring interviewers can demo immediately. When `OPENAI_API_KEY` is set, `OpenAIImageProvider` (`gpt-image-1` by default, with automatic fallback to `dall-e-3` and `dall-e-2`) is used automatically.
 
 ### Sharp for Image Processing
 
@@ -233,7 +255,8 @@ Filesystem + JSON reports. Each pipeline run is independent. Appropriate for pro
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `OPENAI_API_KEY` | (empty) | OpenAI API key for DALL-E generation |
+| `OPENAI_API_KEY` | (empty) | OpenAI API key; omit to use the mock provider |
+| `OPENAI_IMAGE_MODEL` | `gpt-image-1` | Preferred model; falls back through `dall-e-3` → `dall-e-2` |
 | `PORT` | `3001` | Backend server port |
 | `STORAGE_ROOT` | `./storage` | Asset storage directory |
 | `OUTPUTS_ROOT` | `./outputs` | Generated output directory |

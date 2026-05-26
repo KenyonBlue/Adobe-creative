@@ -25,6 +25,7 @@ export default {
         pulseGlow: 'pulseGlow 2s ease-in-out infinite',
         fadeIn: 'fadeIn 0.5s ease-out forwards',
         slideUp: 'slideUp 0.4s ease-out forwards',
+        fadeInUp: 'fadeInUp 0.4s ease-out forwards',
       },
       keyframes: {
         shimmer: {
@@ -41,6 +42,10 @@ export default {
         },
         slideUp: {
           from: { opacity: '0', transform: 'translateY(12px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
+        },
+        fadeInUp: {
+          from: { opacity: '0', transform: 'translateY(6px)' },
           to: { opacity: '1', transform: 'translateY(0)' },
         },
       },

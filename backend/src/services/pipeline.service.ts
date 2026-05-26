@@ -1,20 +1,60 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { config, AspectRatioKey } from '../config';
-import { CampaignBrief } from '../models/campaign-brief.model';
+import { CampaignBrief, Product, Region } from '../models/campaign-brief.model';
 import { CampaignReport, ProductOutput } from '../models/report.model';
 import { LocalStorageProvider } from '../providers/storage/local-storage.provider';
-import { createImageGenerationProvider } from '../providers/image-generation';
+import { createImageGenerationProvider, ImageGenerationProvider } from '../providers/image-generation';
 import { AssetResolverService } from './asset-resolver.service';
-import {
-  ImageGenerationService,
-  ImageProcessingService,
-} from './image-processing.service';
+import { ImageProcessingService } from './image-processing.service';
 import { ComplianceService } from './compliance.service';
-import { ReportingService } from './reporting.service';
+import { localizationService } from './localization.service';
 import { slugify } from '../utils/slugify';
 import { validateCampaignBrief } from '../utils/validators';
-import { getDisplayMessage } from '../utils/prompt-builder';
+import { buildImagePrompt, getDisplayMessage, HERO_GENERATION } from '../utils/prompt-builder';
+
+function buildReport(
+  campaignName: string,
+  campaignSlug: string,
+  startedAt: Date,
+  completedAt: Date,
+  products: ProductOutput[],
+  assetsReused: string[],
+  assetsGenerated: string[],
+  generationProvider: string
+): CampaignReport {
+  const complianceFailures = products.flatMap((p) => p.compliance.filter((c) => !c.passed));
+  const localizedVariantsCreated = products.filter((p) => p.region !== 'default').length;
+  const outputPaths = products.flatMap((p) => Object.values(p.outputs));
+
+  return {
+    campaignName,
+    campaignSlug,
+    startedAt: startedAt.toISOString(),
+    completedAt: completedAt.toISOString(),
+    processingDurationMs: completedAt.getTime() - startedAt.getTime(),
+    assetsReused,
+    assetsGenerated,
+    localizedVariantsCreated,
+    products,
+    complianceFailures,
+    outputPaths,
+    generationProvider,
+  };
+}
+
+async function generateHeroAsset(
+  provider: ImageGenerationProvider,
+  brief: CampaignBrief,
+  product: Product,
+  region: Region
+): Promise<Buffer> {
+  const prompt = buildImagePrompt(brief, product, region);
+  return provider.generateImage(prompt, {
+    width: HERO_GENERATION.width,
+    height: HERO_GENERATION.height,
+  });
+}
 
 export class PipelineService {
   private readonly storage = new LocalStorageProvider(config.storageRoot);
@@ -22,48 +62,47 @@ export class PipelineService {
   private readonly assetResolver = new AssetResolverService(this.storage, this.uploadsStorage);
   private readonly imageProcessing = new ImageProcessingService();
   private readonly compliance = new ComplianceService();
-  private readonly reporting = new ReportingService();
 
   async run(brief: CampaignBrief): Promise<CampaignReport> {
     validateCampaignBrief(brief);
+    const localizedBrief = await localizationService.enrichBrief(brief);
 
     const startedAt = new Date();
-    const campaignSlug = slugify(brief.campaignName);
+    const campaignSlug = slugify(localizedBrief.campaignName);
     const outputDir = path.join(config.outputsRoot, campaignSlug);
     await fs.mkdir(outputDir, { recursive: true });
 
     const imageProvider = await createImageGenerationProvider();
-    const imageGeneration = new ImageGenerationService(imageProvider);
-    const providerName = imageGeneration.getProviderName();
+    const providerName = imageProvider.getName();
 
-    const logoBuffer = await this.assetResolver.tryLoadLogo(brief.logoPath);
+    const logoBuffer = await this.assetResolver.tryLoadLogo(localizedBrief.logoPath);
     const hasLogo = logoBuffer !== null;
 
     const assetsReused: string[] = [];
     const assetsGenerated: string[] = [];
     const productOutputs: ProductOutput[] = [];
 
-    const primaryRegion = brief.regions[0];
+    const primaryRegion = localizedBrief.regions[0];
 
-    for (const product of brief.products) {
+    for (const product of localizedBrief.products) {
       const productSlug = slugify(product.name);
       const productDir = path.join(outputDir, productSlug);
       await fs.mkdir(productDir, { recursive: true });
 
-      const heroResult = await this.assetResolver.resolveHeroAsset(brief, product);
+      const heroResult = await this.assetResolver.resolveHeroAsset(localizedBrief, product);
       let heroBuffer: Buffer;
       let assetSource: 'reused' | 'generated';
 
-      if (heroResult) {
+      if (heroResult?.source === 'reused') {
+        // User supplied a finished product image — pass it straight through to image
+        // processing (resize + text overlay). No AI generation needed or desired.
+        console.log(`[pipeline] Reusing uploaded asset for ${product.name} — skipping AI generation`);
         heroBuffer = heroResult.buffer;
         assetSource = 'reused';
         assetsReused.push(product.name);
       } else {
-        heroBuffer = await imageGeneration.generateHeroAsset(
-          brief,
-          product,
-          primaryRegion
-        );
+        // No asset provided — generate a hero image from text description via GenAI.
+        heroBuffer = await generateHeroAsset(imageProvider, localizedBrief, product, primaryRegion);
         assetSource = 'generated';
         assetsGenerated.push(product.name);
 
@@ -71,8 +110,8 @@ export class PipelineService {
         await this.storage.saveAsset(storagePath, heroBuffer);
       }
 
-      for (const region of brief.regions) {
-        const useRegionSubfolder = brief.regions.length > 1;
+      for (const region of localizedBrief.regions) {
+        const useRegionSubfolder = localizedBrief.regions.length > 1;
         const writeDir = useRegionSubfolder
           ? path.join(productDir, region.code)
           : productDir;
@@ -83,7 +122,7 @@ export class PipelineService {
 
         const variants = await this.imageProcessing.processProductVariants(
           heroBuffer,
-          brief,
+          localizedBrief,
           product,
           region,
           logoBuffer
@@ -106,17 +145,17 @@ export class PipelineService {
           productName: product.name,
           productSlug,
           region: region.code,
-          message: getDisplayMessage(brief, region),
+          message: getDisplayMessage(localizedBrief, region),
           outputs,
-          compliance: this.compliance.runChecks(brief, product, hasLogo),
+          compliance: this.compliance.runChecks(localizedBrief, product, hasLogo),
           assetSource,
         });
       }
     }
 
     const completedAt = new Date();
-    const report = this.reporting.buildReport(
-      brief.campaignName,
+    const report = buildReport(
+      localizedBrief.campaignName,
       campaignSlug,
       startedAt,
       completedAt,

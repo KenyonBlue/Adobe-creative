@@ -1,6 +1,12 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { StorageProvider } from './storage.provider';
+
+export interface StorageProvider {
+  saveAsset(assetPath: string, data: Buffer): Promise<string>;
+  getAsset(assetPath: string): Promise<Buffer | null>;
+  assetExists(assetPath: string): Promise<boolean>;
+  listAssets(prefix: string): Promise<string[]>;
+}
 
 export class LocalStorageProvider implements StorageProvider {
   constructor(private readonly rootPath: string) {}

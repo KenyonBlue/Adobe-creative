@@ -1,5 +1,3 @@
-import { CampaignReport } from './report.model';
-
 export interface Product {
   name: string;
   type: string;
@@ -22,20 +20,4 @@ export interface CampaignBrief {
   brandColors?: string[];
   style?: string;
   logoPath?: string;
-}
-
-export interface CampaignRunRequest {
-  brief: CampaignBrief;
-}
-
-export type CampaignStatus = 'pending' | 'running' | 'completed' | 'failed';
-
-export interface CampaignRun {
-  id: string;
-  status: CampaignStatus;
-  brief: CampaignBrief;
-  startedAt: string;
-  completedAt?: string;
-  error?: string;
-  report?: CampaignReport;
 }

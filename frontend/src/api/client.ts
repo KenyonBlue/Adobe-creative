@@ -2,6 +2,7 @@ import {
   CampaignBrief,
   CampaignReport,
   CampaignRunResponse,
+  CampaignSummary,
   UploadedAsset,
 } from '../types';
 
@@ -22,6 +23,15 @@ export async function runCampaign(brief: CampaignBrief): Promise<CampaignRunResp
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(brief),
   });
+}
+
+export async function listCampaigns(): Promise<CampaignSummary[]> {
+  return request<CampaignSummary[]>('/api/campaigns');
+}
+
+export async function loadCampaign(slug: string): Promise<CampaignReport> {
+  const result = await request<{ report: CampaignReport }>(`/api/campaigns/${slug}`);
+  return result.report;
 }
 
 export async function uploadAssets(files: File[]): Promise<{ uploaded: UploadedAsset[] }> {

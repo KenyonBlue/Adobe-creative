@@ -11,8 +11,8 @@ export function validateCampaignBrief(brief: CampaignBrief): void {
   if (!brief.campaignName?.trim()) {
     throw new ValidationError('campaignName is required');
   }
-  if (!brief.products || brief.products.length < 2) {
-    throw new ValidationError('At least two products are required');
+  if (!brief.products || brief.products.length < 1) {
+    throw new ValidationError('At least one product is required');
   }
   for (const product of brief.products) {
     if (!product.name?.trim()) throw new ValidationError('Each product must have a name');

@@ -1,15 +1,18 @@
-import { ReactNode } from 'react';
+import { ReactNode, useMemo } from 'react';
 import GenerationStatus from './GenerationStatus';
 import ComplianceStatus from './ComplianceStatus';
 import ReportSummary, { ExportPanel } from './ReportSummary';
-import { CampaignReport, PipelineStep, ProductOutput, WorkflowUiStep } from '../types';
+import { CampaignReport, PipelineStep, ProductOutput } from '../types';
+import { estimateGenerationTime } from '../utils/generation-estimate';
 
 interface InsightsPanelProps {
   pipelineStep: PipelineStep;
   error: string | null;
   report: CampaignReport | null;
   products: ProductOutput[];
-  activeWorkflowStep: WorkflowUiStep;
+  productCount?: number;
+  regionCount?: number;
+  uploadedProductCount?: number;
 }
 
 function Panel({ children }: { children: ReactNode }) {
@@ -23,8 +26,23 @@ export default function InsightsPanel({
   error,
   report,
   products,
-  activeWorkflowStep,
+  productCount = 1,
+  regionCount = 1,
+  uploadedProductCount = 0,
 }: InsightsPanelProps) {
+  const estimate = useMemo(
+    () =>
+      estimateGenerationTime({
+        productCount,
+        regionCount,
+        uploadedProductCount,
+      }),
+    [productCount, regionCount, uploadedProductCount]
+  );
+
+  const isRunning =
+    pipelineStep !== 'idle' && pipelineStep !== 'complete' && pipelineStep !== 'error';
+
   return (
     <aside className="flex h-full w-[300px] shrink-0 flex-col border-l border-white/[0.06] bg-studio-surface/50">
       <div className="border-b border-white/[0.06] px-5 py-4">
@@ -35,7 +53,11 @@ export default function InsightsPanel({
       <div className="flex-1 space-y-4 overflow-y-auto p-4">
         {(pipelineStep !== 'idle' || error) && (
           <Panel>
-            <GenerationStatus step={pipelineStep} error={error} />
+            <GenerationStatus
+              step={pipelineStep}
+              error={error}
+              estimate={isRunning ? estimate : null}
+            />
           </Panel>
         )}
 
@@ -46,18 +68,17 @@ export default function InsightsPanel({
         )}
 
         {report && (
-          <Panel>
-            <ReportSummary report={report} />
-          </Panel>
-        )}
-
-        {activeWorkflowStep === 'export' && (
-          <Panel>
-            <h3 className="mb-3 text-xs font-semibold uppercase tracking-widest text-zinc-500">
-              Export
-            </h3>
-            <ExportPanel report={report} />
-          </Panel>
+          <>
+            <Panel>
+              <ReportSummary report={report} />
+            </Panel>
+            <Panel>
+              <h3 className="mb-3 text-xs font-semibold uppercase tracking-widest text-zinc-500">
+                Export
+              </h3>
+              <ExportPanel report={report} />
+            </Panel>
+          </>
         )}
 
         {pipelineStep === 'idle' && !report && products.length === 0 && (

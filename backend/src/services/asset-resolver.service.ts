@@ -2,8 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { config } from '../config';
 import { CampaignBrief, Product } from '../models/campaign-brief.model';
-import { StorageProvider } from '../providers/storage/storage.provider';
-import { slugify } from '../utils/slugify';
+import { StorageProvider } from '../providers/storage/local-storage.provider';
 
 export class AssetResolverService {
   constructor(
@@ -15,29 +14,11 @@ export class AssetResolverService {
     brief: CampaignBrief,
     product: Product
   ): Promise<{ buffer: Buffer; source: 'reused' | 'generated' } | null> {
+    // Only reuse explicitly user-uploaded assets — never auto-reuse cached AI generations
     if (product.existingAssetPath) {
       const buffer = await this.tryLoadAsset(product.existingAssetPath);
       if (buffer) {
         return { buffer, source: 'reused' };
-      }
-    }
-
-    const slug = slugify(product.name);
-    const campaignSlug = slugify(brief.campaignName);
-    const storagePaths = [
-      `assets/${campaignSlug}/${slug}.png`,
-      `assets/${campaignSlug}/${slug}.jpg`,
-      `assets/${slug}.png`,
-      `assets/${slug}.jpg`,
-    ];
-
-    for (const assetPath of storagePaths) {
-      const exists = await this.storage.assetExists(assetPath);
-      if (exists) {
-        const buffer = await this.storage.getAsset(assetPath);
-        if (buffer) {
-          return { buffer, source: 'reused' };
-        }
       }
     }
 

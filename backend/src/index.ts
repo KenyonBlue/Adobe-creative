@@ -3,10 +3,7 @@ import cors from 'cors';
 import path from 'path';
 import fs from 'fs/promises';
 import { config } from './config';
-import campaignRoutes from './routes/campaign.routes';
-import assetsRoutes from './routes/assets.routes';
-
-import { createImageGenerationProvider } from './providers/image-generation';
+import apiRoutes from './routes/index';
 
 async function ensureDirectories() {
   await Promise.all([
@@ -19,9 +16,6 @@ async function ensureDirectories() {
 async function main() {
   await ensureDirectories();
 
-  const imageProvider = await createImageGenerationProvider();
-  console.log(`Image generation provider: ${imageProvider.getName()}`);
-
   const app = express();
 
   app.use(cors());
@@ -31,8 +25,7 @@ async function main() {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
   });
 
-  app.use('/api/campaigns', campaignRoutes);
-  app.use('/api/assets', assetsRoutes);
+  app.use('/api', apiRoutes);
 
   app.use('/api/outputs', express.static(config.outputsRoot));
   app.use('/api/uploads', express.static(config.uploadsRoot));
